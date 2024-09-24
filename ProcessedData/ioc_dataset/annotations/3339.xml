@@ -1,0 +1,34 @@
+<annotation>
+  <folder>images-new2</folder>
+  <filename>v-id38-frame13</filename>
+  <path>C:\Users\sungu\OneDrive\Documents\camouflaged-crowd-counting-final\image-new2\images-new2\images-new2\v-id38-frame13.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>756</x>
+      <y>488</y>
+    </point>
+  </object>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>890</x>
+      <y>893</y>
+    </point>
+  </object>
+</annotation>

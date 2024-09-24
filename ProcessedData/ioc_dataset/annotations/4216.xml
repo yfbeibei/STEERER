@@ -1,0 +1,34 @@
+<annotation>
+  <folder>images-new</folder>
+  <filename>v-id2-frame938</filename>
+  <path>C:\Users\sungu\Documents\camouflaged-crowd-counting\images-new\images-new\v-id2-frame938.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>1337</x>
+      <y>521</y>
+    </point>
+  </object>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>1668</x>
+      <y>112</y>
+    </point>
+  </object>
+</annotation>

@@ -1,0 +1,24 @@
+<annotation>
+  <folder>&#39532;&#20025;(4)</folder>
+  <filename>v-id43-frame1618</filename>
+  <path>C:\Users\38224\Desktop\&#39532;&#20025;(4)\v-id43-frame1618.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>1012</x>
+      <y>624</y>
+    </point>
+  </object>
+</annotation>

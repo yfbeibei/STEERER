@@ -1,0 +1,34 @@
+<annotation>
+  <folder>images-new3</folder>
+  <filename>v-id45-frame1258</filename>
+  <path>C:\Users\sungu\Documents\camouflaged-crowd-counting\images-new3\images-new3\v-id45-frame1258.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>928</x>
+      <y>687</y>
+    </point>
+  </object>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>498</x>
+      <y>891</y>
+    </point>
+  </object>
+</annotation>

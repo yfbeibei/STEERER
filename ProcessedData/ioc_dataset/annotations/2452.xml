@@ -1,0 +1,24 @@
+<annotation>
+  <folder>part-ce</folder>
+  <filename>v-id21-frame848</filename>
+  <path>Z:\part-ce\v-id21-frame848.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>761</x>
+      <y>435</y>
+    </point>
+  </object>
+</annotation>

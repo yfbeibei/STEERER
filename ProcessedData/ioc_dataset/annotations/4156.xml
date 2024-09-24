@@ -1,0 +1,24 @@
+<annotation>
+  <folder>&#26472;&#38064;&#20891;</folder>
+  <filename>v-id37-frame127</filename>
+  <path>C:\Users\38224\Desktop\&#26472;&#38064;&#20891;\v-id37-frame127.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>956</x>
+      <y>441</y>
+    </point>
+  </object>
+</annotation>

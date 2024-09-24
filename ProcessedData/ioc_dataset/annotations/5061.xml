@@ -1,0 +1,24 @@
+<annotation>
+  <folder>images-new3</folder>
+  <filename>v-id50-frame41</filename>
+  <path>C:\Users\sungu\Documents\camouflaged-crowd-counting\images-new3\images-new3\v-id50-frame41.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>857</x>
+      <y>421</y>
+    </point>
+  </object>
+</annotation>

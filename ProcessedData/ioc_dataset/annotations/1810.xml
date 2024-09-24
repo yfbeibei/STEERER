@@ -1,0 +1,24 @@
+<annotation>
+  <folder>images-new4</folder>
+  <filename>v-id134-frame723</filename>
+  <path>C:\Users\sungu\OneDrive\Documents\camouflaged-crowd-counting-final\image-new4\images-new4\images-new4\v-id134-frame723.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>1069</x>
+      <y>603</y>
+    </point>
+  </object>
+</annotation>

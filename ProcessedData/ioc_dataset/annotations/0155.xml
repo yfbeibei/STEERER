@@ -1,0 +1,24 @@
+<annotation>
+  <folder>images</folder>
+  <filename>v-id18-frame152</filename>
+  <path>C:\Users\sungu\Documents\camouflaged-crowd-counting\images\images\v-id18-frame152.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>762</x>
+      <y>328</y>
+    </point>
+  </object>
+</annotation>

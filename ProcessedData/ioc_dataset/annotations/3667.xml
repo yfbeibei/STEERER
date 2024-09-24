@@ -1,0 +1,24 @@
+<annotation>
+  <folder>part2-a</folder>
+  <filename>v-id37-frame165</filename>
+  <path>D:\data processing\&#28023;&#27915;&#28857;&#26631;&#27880;\part2-a\v-id37-frame165.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>1010</x>
+      <y>574</y>
+    </point>
+  </object>
+</annotation>

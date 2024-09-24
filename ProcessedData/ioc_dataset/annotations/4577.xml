@@ -1,0 +1,24 @@
+<annotation>
+  <folder>&#23391;</folder>
+  <filename>v-id34-frame8</filename>
+  <path>C:\Users\86182\Desktop\&#23391;\v-id34-frame8.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>859</x>
+      <y>507</y>
+    </point>
+  </object>
+</annotation>

@@ -1,0 +1,24 @@
+<annotation>
+  <folder>&#26446;&#23068;004</folder>
+  <filename>v-id23-frame1271</filename>
+  <path>E:\&#26700;&#38754;\&#26446;&#23068;004\v-id23-frame1271.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>fish</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <point>
+      <x>1302</x>
+      <y>526</y>
+    </point>
+  </object>
+</annotation>
