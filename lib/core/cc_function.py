@@ -21,6 +21,35 @@ from lib.utils.utils import *
 from lib.utils.points_from_den import local_maximum_points
 from lib.eval.eval_loc_count import eval_loc_MLE_point, eval_loc_F1_boxes
 from ot_loss import OT_Loss
+
+
+def gen_discrete_map(im_height, im_width, points):
+    """
+        func: generate the discrete map.
+        points: [num_gt, 2], for each row: [width, height]
+        """
+    discrete_map = np.zeros([im_height, im_width], dtype=np.float32)
+    h, w = discrete_map.shape[:2]
+    num_gt = points.shape[0]
+    if num_gt == 0:
+        return discrete_map
+    
+    # fast create discrete map
+    points_np = np.array(points).round().astype(int)
+    p_h = np.minimum(points_np[:, 1], np.array([h-1]*num_gt).astype(int))
+    p_w = np.minimum(points_np[:, 0], np.array([w-1]*num_gt).astype(int))
+    p_index = torch.from_numpy(p_h* im_width + p_w)
+    discrete_map = torch.zeros(im_width * im_height).scatter_add_(0, index=p_index, src=torch.ones(im_width*im_height)).view(im_height, im_width).numpy()
+
+    ''' slow method
+    for p in points:
+        p = np.round(p).astype(int)
+        p[0], p[1] = min(h - 1, p[1]), min(w - 1, p[0])
+        discrete_map[p[0], p[1]] += 1
+    '''
+    assert np.sum(discrete_map) == num_gt
+    return discrete_map
+
 def reduce_tensor(inp):
     """
     Reduce the loss from all processes so that 
@@ -56,8 +85,8 @@ def train(config, epoch, num_epoch, epoch_iters, num_iters,
     global_steps = writer_dict['train_global_steps']
     rank = get_rank()
     world_size = get_world_size()
-
-    ot_loss = OT_Loss(256, 8, 0, device, 100, 10.0)
+    downsample_ratio=8
+    ot_loss = OT_Loss(256, downsample_ratio, 0, device, 100, 10.0)
     tv_loss = nn.L1Loss(reduction='none').cuda()  #.to(self.device)
     mae_loss = nn.L1Loss().cuda()   #.to(self.device)
     dm_losses=[ot_loss, tv_loss, mae_loss]
@@ -75,27 +104,50 @@ def train(config, epoch, num_epoch, epoch_iters, num_iters,
         # pdb.set_trace()
         
         pre_den=result['pre_den']['1'] #[6,1,768,768]
+        mu2 = F.relu(pre_den) #[8,1,32,32]
+        B, C, H, W=mu2.size() 
+        mu2_sum = mu2.view([B,-1]).sum(1).unsqueeze(1).unsqueeze(2).unsqueeze(3) #[8,1,1,1]
+        pre_den_normed = mu2 / (mu2_sum + 1e-6)
        
         gt_den = result['gt_den']['1'] #[6,1,768,768]
       
        
-        gd_count = torch.tensor([label[i].sum().item() for i in range(len(label))], dtype=torch.float32).to(device)#len(gd_count)=4
+        gd_count = torch.tensor([label[0].sum().item()], dtype=torch.float32).to(device)#len(gd_count)=4
 
         # OT损失计算
-        points = [label[i][:, :2] for i in range(len(label))]  # 提取每个样本的标注点坐标
+        points = [label[0][:, :2].cuda()]  # 提取每个样本的标注点坐标
         print(f"points length: {len(points)}")  # 检查points的长度4
-        ot_loss_value, wd, ot_obj_value = dm_losses[0](pre_den, pre_den, points)
+        ot_loss_value, wd, ot_obj_value = dm_losses[0](pre_den_normed, pre_den, points)
         ot_loss_value *= 0.1  # 使用损失权重调整
 
         # 计数损失计算
         count_loss = dm_losses[2](pre_den.sum(dim=[1, 2, 3]), gd_count)
 
-        # TV损失计算
-        gt_den_normed = gt_den / (gd_count.view(-1, 1, 1, 1) + 1e-6)  # 归一化真实密度图
-        tv_loss_value = (dm_losses[1](pre_den, gt_den_normed).sum(dim=[1, 2, 3]) * gd_count).mean()
+        # # TV损失计算
+        # gt_den_normed = gt_den / (gd_count.view(-1, 1, 1, 1) + 1e-6)  # 归一化真实密度图
+        # tv_loss_value = (dm_losses[1](pre_den, gt_den_normed).sum(dim=[1, 2, 3]) * gd_count).mean()
+
+        gt_points_scale=label[0]/float(768)*768
+                    # print(gt_points_scale.shape, gt_points_scale.dtype);print(gt_points_scale[0,:]);exit()
+        assert gt_points_scale.dim()==2
+        gt_points_scale=torch.flip(gt_points_scale, [1])
+        discrete_map=gen_discrete_map(768, 768,gt_points_scale)
+        gd_count_tensor = torch.from_numpy(gd_count).float().cuda().unsqueeze(1).unsqueeze(2).unsqueeze(3)
+        gt_map = torch.from_numpy(discrete_map).unsqueeze(0)
+        gt_discrete = [gt_map.cuda()]
+        gt_discrete = torch.stack(gt_discrete)
+        assert gt_discrete.shape[-2]%downsample_ratio==0 and gt_discrete.shape[-1]%downsample_ratio==0
+        down_h=gt_discrete.shape[-2]//downsample_ratio
+        down_w=gt_discrete.shape[-1]//downsample_ratio
+        gt_discrete=gt_discrete.reshape((gt_discrete.shape[0], gt_discrete.shape[1], down_h, downsample_ratio, down_w, downsample_ratio)).sum(dim=(3,5))
+        assert [gt_discrete[i].sum()==gd_count[i] for i in range(size)]
+        gt_discrete_normed = gt_discrete / (gd_count_tensor + 1e-6)
+        wtv=0.01
+        tv_loss = (dm_losses[1](pre_den_normed, gt_discrete_normed).sum(1).sum(1).sum(1) * torch.from_numpy(gd_count).float().cuda()).mean(0) * wtv 
+
 
         # 最终损失
-        total_loss = ot_loss_value + count_loss + tv_loss_value
+        total_loss = ot_loss_value + count_loss + tv_loss
         for i in range(len(name_idx[0])):
 
             _name  = name_idx[0][i]
@@ -165,6 +217,7 @@ def train(config, epoch, num_epoch, epoch_iters, num_iters,
                 save_results_more(global_steps, img_vis_dir, image.cpu().data, \
                                   pre_den[0].detach().cpu(), gt_den[0].detach().cpu(),
                                   pre_den[0].sum().item(), label[0][0].sum().item())
+
 
 def validate(config, testloader, model, writer_dict, device,
              num_patches,img_vis_dir,mean,std):

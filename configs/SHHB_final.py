@@ -23,10 +23,10 @@ network = dict(
         inter_layer=[64,32,16],
         out_channels=1)
 )
-
+ 
 dataset = dict(
     name='SHHB',
-    root='/data/yf/STEERER_/ProcessedData/ioc_dataset/',
+    root='/data/yf/STEERER/ProcessedData/ioc_dataset/',
     test_set='val.txt',
     train_set='train.txt',
     loc_gt = 'val_gt_loc.txt',
@@ -63,7 +63,7 @@ log_config = dict(
     hooks=[
         dict(type='TextLoggerHook'),
     ])
-
+ 
 train = dict(
     counter='normal',
     image_size=(768,768),  # height width

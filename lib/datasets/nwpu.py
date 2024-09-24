@@ -101,7 +101,7 @@ class NWPU(BaseDataset):
     #                 gt_data[idx] = {'num': 0, 'points': [], 'sigma': [], 'level': []}
 
     #     return gt_data
-
+ 
     def __getitem__(self, index):
         item = self.files[index]
         name = item["name"]

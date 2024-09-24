@@ -184,17 +184,17 @@ def main():
 
     # prepare data
     train_dataset = eval('datasets.' + config.dataset.name)(
-        root=config.dataset.root,
-        list_path=config.dataset.train_set,
+        root=config.dataset.root, #/data/yf/STEERER/ProcessedData/ioc_dataset/
+        list_path=config.dataset.train_set, #train.txt
         num_samples=None,
-        num_classes=config.dataset.num_classes,
-        multi_scale=config.train.multi_scale,
-        flip=config.train.flip,
+        num_classes=config.dataset.num_classes, #4
+        multi_scale=config.train.multi_scale, #True
+        flip=config.train.flip, #True
         ignore_label=None,
-        base_size=config.train.base_size,
-        crop_size=config.train.image_size,
-        min_unit=config.train.route_size,
-        scale_factor=config.train.scale_factor)
+        base_size=config.train.base_size, #2048
+        crop_size=config.train.image_size, #(768,768)
+        min_unit=config.train.route_size, #(256,256)
+        scale_factor=config.train.scale_factor) #(0.5, 1.0/0.5)
 
     if distributed:
         train_sampler = DistributedSampler(train_dataset)
@@ -203,7 +203,7 @@ def main():
 
     trainloader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=config.train.batch_size_per_gpu,
+        batch_size=config.train.batch_size_per_gpu,#6
         shuffle=config.train.shuffle and train_sampler is None,
         num_workers=config.workers,
         pin_memory=True,

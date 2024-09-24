@@ -1,13 +1,13 @@
 import torch
 from torch.nn import Module
 from bregman_pytorch import sinkhorn
- 
+
 class OT_Loss(Module):
     def __init__(self, c_size, stride, norm_cood, device, num_of_iter_in_ot=100, reg=10.0):
         super(OT_Loss, self).__init__()
         assert c_size % stride == 0
 
-        self.c_size = 768
+        self.c_size = c_size
         self.device = device
         self.norm_cood = norm_cood
         self.num_of_iter_in_ot = num_of_iter_in_ot
@@ -24,24 +24,12 @@ class OT_Loss(Module):
         self.cood.unsqueeze_(0) # [1, #cood]
         if self.norm_cood:
             self.cood = self.cood / c_size * 2 - 1 # map to [-1, 1]
-        self.output_size = 768
-
+        self.output_size = self.cood.size(1)
 
 
     def forward(self, normed_density, unnormed_density, points):
         batch_size = normed_density.size(0)
-        # 检查 points 的长度并补齐
-        if len(points) < normed_density.size(0):
-            for _ in range(normed_density.size(0) - len(points)):
-                points.append(torch.empty(0, 2).cuda())  # 添加空的点
-        # print(f"batch_size: {normed_density.size(0)}, points length: {len(points)}")
-        
-        # print(f"Expected output size: {self.output_size}, Actual output size: {normed_density.size()}")
-        # assert self.output_size == normed_density.size(2)
-
         assert len(points) == batch_size
-        print(self.cood.size())#[1,32]
-        print(normed_density.size())#[6,1,768,768]
         assert self.output_size == normed_density.size(2)
         if self.device is not None:
             loss = torch.zeros([1]).to(self.device)

@@ -212,8 +212,8 @@ class Baseline_Counter(nn.Module):
 
                 mask_add -=mask_gt[:,i].unsqueeze(1)
 
-            import pdb
-            pdb.set_trace()
+            # import pdb
+            # pdb.set_trace()
 
             B_num, C_num, H_num, W_num =  out_list[0].size() #[6,1,768,768]
             patch_h, patch_w = H_num // self.route_size[0], W_num // self.route_size[1] #(3,3)
