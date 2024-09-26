@@ -28,9 +28,13 @@ class OT_Loss(Module):
 
 
     def forward(self, normed_density, unnormed_density, points):
-        batch_size = normed_density.size(0)
-        assert len(points) == batch_size
-        assert self.output_size == normed_density.size(2)
+        batch_size = normed_density.size(0) #6
+
+        # import pdb
+        # pdb.set_trace()
+
+        assert len(points) == batch_size  #len(points)=1
+        assert self.output_size == normed_density.size(2) #self.output_size=32,768
         if self.device is not None:
             loss = torch.zeros([1]).to(self.device)
             ot_obj_values = torch.zeros([1]).to(self.device)

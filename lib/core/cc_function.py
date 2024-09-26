@@ -86,13 +86,13 @@ def train(config, epoch, num_epoch, epoch_iters, num_iters,
     rank = get_rank()
     world_size = get_world_size()
     downsample_ratio=8
-    ot_loss = OT_Loss(256, downsample_ratio, 0, device, 100, 10.0)
+    ot_loss = OT_Loss(768, 1, 0, device, 100, 10.0)
     tv_loss = nn.L1Loss(reduction='none').cuda()  #.to(self.device)
     mae_loss = nn.L1Loss().cuda()   #.to(self.device)
     dm_losses=[ot_loss, tv_loss, mae_loss]
 
     for i_iter, batch in enumerate(trainloader):
-        images, label, size, name_idx = batch
+        images, label, size, name_idx = batch #size=([[1080,1920,3],[1080,1920,3],[1080,1920,3],[1080,1920,3],[1080,1920,3],[1080,1920,3]])
         images = images.to(device)#[6,3,768,768]
         for i in range(len(label)):#label[0]=[6,768,768],label[1]=[6,384,384],label[2]=[6,192,192],label[3]=[6,96,96]
             label[i] = label[i].to(device)
@@ -104,10 +104,13 @@ def train(config, epoch, num_epoch, epoch_iters, num_iters,
         # pdb.set_trace()
         
         pre_den=result['pre_den']['1'] #[6,1,768,768]
-        mu2 = F.relu(pre_den) #[8,1,32,32]
+        mu2 = F.relu(pre_den) #[6,1,768,768]
         B, C, H, W=mu2.size() 
-        mu2_sum = mu2.view([B,-1]).sum(1).unsqueeze(1).unsqueeze(2).unsqueeze(3) #[8,1,1,1]
-        pre_den_normed = mu2 / (mu2_sum + 1e-6)
+        mu2_sum = mu2.view([B,-1]).sum(1).unsqueeze(1).unsqueeze(2).unsqueeze(3) #[6,1,1,1]
+        pre_den_normed = mu2 / (mu2_sum + 1e-6) #[6,1,768,768]
+
+        # import pdb
+        # pdb.set_trace()
        
         gt_den = result['gt_den']['1'] #[6,1,768,768]
       
@@ -115,7 +118,15 @@ def train(config, epoch, num_epoch, epoch_iters, num_iters,
         gd_count = torch.tensor([label[0].sum().item()], dtype=torch.float32).to(device)#len(gd_count)=4
 
         # OT损失计算
-        points = [label[0][:, :2].cuda()]  # 提取每个样本的标注点坐标
+        
+        points = []  # 初始化一个空列表来存储所有batch的点坐标
+
+        # 遍历当前batch的每个样本
+        for i in range(label[0].size(0)):  # label[0] 的第一个维度是 batch size
+            # 提取每个样本的点坐标，并添加到points列表
+            sample_points = label[0][i][:, :2].cuda()  # 假设点坐标存储在label[0]，并且点坐标在前两个维度
+            points.append(sample_points)
+
         print(f"points length: {len(points)}")  # 检查points的长度4
         ot_loss_value, wd, ot_obj_value = dm_losses[0](pre_den_normed, pre_den, points)
         ot_loss_value *= 0.1  # 使用损失权重调整

@@ -5,7 +5,7 @@
 
 CONFIG=$1
 GPUS_ID=${2:-0}    #the default gpu_id is 0 
-PORT=${3:-29002}   #the default gpu_id is 1
+PORT=${3:-29102}   #the default gpu_id is 1
 NNODES=${NNODES:-1}
 NODE_RANK=${NODE_RANK:-0}
 
