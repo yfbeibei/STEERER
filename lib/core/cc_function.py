@@ -85,7 +85,7 @@ def train(config, epoch, num_epoch, epoch_iters, num_iters,
     global_steps = writer_dict['train_global_steps']
     rank = get_rank()
     world_size = get_world_size()
-    downsample_ratio=8
+    downsample_ratio=1
     ot_loss = OT_Loss(768, 1, 0, device, 100, 10.0)
     tv_loss = nn.L1Loss(reduction='none').cuda()  #.to(self.device)
     mae_loss = nn.L1Loss().cuda()   #.to(self.device)
@@ -108,7 +108,7 @@ def train(config, epoch, num_epoch, epoch_iters, num_iters,
         B, C, H, W=mu2.size() 
         mu2_sum = mu2.view([B,-1]).sum(1).unsqueeze(1).unsqueeze(2).unsqueeze(3) #[6,1,1,1]
         pre_den_normed = mu2 / (mu2_sum + 1e-6) #[6,1,768,768]
-
+        
         # import pdb
         # pdb.set_trace()
        
@@ -125,36 +125,71 @@ def train(config, epoch, num_epoch, epoch_iters, num_iters,
         for i in range(label[0].size(0)):  # label[0] 的第一个维度是 batch size
             # 提取每个样本的点坐标，并添加到points列表
             sample_points = label[0][i][:, :2].cuda()  # 假设点坐标存储在label[0]，并且点坐标在前两个维度
-            points.append(sample_points)
-
-        print(f"points length: {len(points)}")  # 检查points的长度4
+            points.append(sample_points) #(1536,2)
+        
         ot_loss_value, wd, ot_obj_value = dm_losses[0](pre_den_normed, pre_den, points)
         ot_loss_value *= 0.1  # 使用损失权重调整
 
+        # import pdb
+        # pdb.set_trace()
         # 计数损失计算
         count_loss = dm_losses[2](pre_den.sum(dim=[1, 2, 3]), gd_count)
 
-        # # TV损失计算
-        # gt_den_normed = gt_den / (gd_count.view(-1, 1, 1, 1) + 1e-6)  # 归一化真实密度图
-        # tv_loss_value = (dm_losses[1](pre_den, gt_den_normed).sum(dim=[1, 2, 3]) * gd_count).mean()
+        points = [p.cpu().numpy() for p in points]  # 将CUDA张量转换为NumPy数组
+        points = np.concatenate(points, axis=0)  # 连接所有样本的点坐标
 
-        gt_points_scale=label[0]/float(768)*768
-                    # print(gt_points_scale.shape, gt_points_scale.dtype);print(gt_points_scale[0,:]);exit()
-        assert gt_points_scale.dim()==2
-        gt_points_scale=torch.flip(gt_points_scale, [1])
-        discrete_map=gen_discrete_map(768, 768,gt_points_scale)
-        gd_count_tensor = torch.from_numpy(gd_count).float().cuda().unsqueeze(1).unsqueeze(2).unsqueeze(3)
-        gt_map = torch.from_numpy(discrete_map).unsqueeze(0)
+        
+        points[points != 1] = 0 #[1536,2]
+        
+        # import pdb
+        # pdb.set_trace()
+
+        gt_points = np.nonzero(torch.from_numpy(points))
+        # gt_points = np.nonzero(points.cpu().numpy())  # 获取非零元素的索引
+        # points = np.array(points).T  # 转置以使维度正确 #(num_points, 3)
+        
+        # 添加 gt_points_scale 的计算
+        gt_points_scale = gt_points / float(768) * 768  # 按照 crop_size 缩放
+        # gt_points_scale = torch.from_numpy(gt_points_scale).float().cuda()  # 转换为张量并移动到 GPU
+        # gt_points_scale = torch.flip(gt_points_scale, [1])  # 翻转坐标
+    
+        # import pdb
+        # pdb.set_trace()
+
+        assert gt_points_scale.dim()==2 #
+        gt_points_scale=torch.flip(gt_points_scale, [1]) #
+        # 假设 gt_points_scale 是你的 CUDA 张量
+        gt_points_scale = gt_points_scale.type(torch.FloatTensor)  # 确保类型正确
+
+        # 将 gt_points_scale 移动到 CPU
+        gt_points_scale = gt_points_scale.cpu()
+        discrete_map=gen_discrete_map(768, 768,gt_points_scale) #(768,768)
+
+        # import pdb
+        # pdb.set_trace()
+
+        gd_count_tensor = gd_count.unsqueeze(1).unsqueeze(2).unsqueeze(3)
+        gt_map = torch.from_numpy(discrete_map).unsqueeze(0) #[1,768,768]
         gt_discrete = [gt_map.cuda()]
-        gt_discrete = torch.stack(gt_discrete)
+        gt_discrete = torch.stack(gt_discrete) #[1,1,768,768]
         assert gt_discrete.shape[-2]%downsample_ratio==0 and gt_discrete.shape[-1]%downsample_ratio==0
-        down_h=gt_discrete.shape[-2]//downsample_ratio
-        down_w=gt_discrete.shape[-1]//downsample_ratio
-        gt_discrete=gt_discrete.reshape((gt_discrete.shape[0], gt_discrete.shape[1], down_h, downsample_ratio, down_w, downsample_ratio)).sum(dim=(3,5))
-        assert [gt_discrete[i].sum()==gd_count[i] for i in range(size)]
+        down_h=gt_discrete.shape[-2]//downsample_ratio #96
+        down_w=gt_discrete.shape[-1]//downsample_ratio #96
+        gt_discrete=gt_discrete.reshape((gt_discrete.shape[0], gt_discrete.shape[1], down_h, downsample_ratio, down_w, downsample_ratio)).sum(dim=(3,5)) #[1,1,96,96]
+        
+        # 确保 gt_discrete 和 gd_count 的长度一致
+        assert len(gt_discrete) == len(gd_count)  # 这会导致 AssertionError 如果长度不一致
+
+        assert [gt_discrete[i].sum()==gd_count[i] for i in range(len(gt_discrete))]
+        # assert [gt_discrete[i].sum()==gd_count[i] for i in range(size)]
         gt_discrete_normed = gt_discrete / (gd_count_tensor + 1e-6)
         wtv=0.01
-        tv_loss = (dm_losses[1](pre_den_normed, gt_discrete_normed).sum(1).sum(1).sum(1) * torch.from_numpy(gd_count).float().cuda()).mean(0) * wtv 
+      
+        # gd_count 计算
+        gd_count = torch.tensor([label[0].sum().item()], dtype=torch.float32).to(device)  # 直接将其移动到 GPU
+
+        # 然后在计算 tv_loss 时使用 gd_count
+        tv_loss = (dm_losses[1](pre_den_normed, gt_discrete_normed).sum(1).sum(1).sum(1) * gd_count).mean(0) * wtv
 
 
         # 最终损失
